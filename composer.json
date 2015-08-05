@@ -1,0 +1,22 @@
+{
+    "name": "samdark/yii2-webshell",
+    "description": "A web shell that allows to run yii console commands and create your own commands.",
+    "type": "yii2-extension",
+    "keywords": ["yii2","extension","webshell","console","shell"],
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Alexander Makarov",
+            "email": "sam@rmcreative.ru"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "*",
+        "bower-asset/jquery.terminal": "~0.8.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "samdark\\webshell\\": ""
+        }
+    }
+}
