@@ -1,12 +1,15 @@
 <?php
-
-
 namespace samdark\webshell;
-
 
 use yii\web\AssetBundle;
 
-class WebshellAsset extends AssetBundle
+/**
+ * JqueryTerminalAsset is an asset bundle used to include JQueryTerminal into the page.
+ *
+ * @see http://terminal.jcubic.pl/
+ * @author Alexander Makarov <sam@rmcreative.ru>
+ */
+class JqueryTerminalAsset extends AssetBundle
 {
     public $sourcePath = '@bower/jquery.terminal';
 
