@@ -3,6 +3,8 @@ Yii 2.0 web shell
 
 Web shell allows to run `yii` console commands using a browser.
 
+<img src="screenshot.png" />
+
 Installation
 ------------
 
