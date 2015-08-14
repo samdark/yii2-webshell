@@ -45,8 +45,18 @@ jQuery(function($) {
         }
     );
 
-    $('html').on('keydown', function(){
-        $('#webshell').click();
+    $('html').on('keydown', function(e) {
+        var webshell = $('#webshell');
+
+        // Catch command enter (by pressing enter key without holding shift)
+        if (e.keyCode === 13 && !e.shiftKey) {
+            // Set timeout to let jquery.terminal draw prompt before scrolling
+            setTimeout(function() {
+                $('html, body').animate({ scrollTop: webshell.height() }, 'fast')
+            }, 100);
+        }
+
+        webshell.click();
     });
 });
 JS
