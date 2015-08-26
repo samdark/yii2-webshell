@@ -33,7 +33,10 @@ To use web shell, include it as a module in the application configuration like t
 ```php
 return [
     'modules' => [
-        'webshell' => ['class' => 'samdark\webshell\Module'],
+        'webshell' => [
+            'class' => 'samdark\webshell\Module',
+            // 'yiiScript' => Yii::getAlias('@root'). '/yii', // adjust path to point to your ./yii script
+        ],
     ],
 ]
 ```
