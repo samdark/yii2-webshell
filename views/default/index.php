@@ -13,11 +13,14 @@ $this->title = $greetings;
 $this->registerJs(
 <<<JS
 jQuery(function($) {
-    $('#webshell').terminal(
+    var webshell = $('#webshell');
+
+    webshell.terminal(
         function(command, term) {
             if (command.indexOf('yii') === 0 || command.indexOf('yii') === 3) {
                     $.jrpc('{$endpoint}', 'yii', [command.replace(/^yii ?/, '')], function(json) {
                         term.echo(json.result);
+                        scrollDown();
                     });
             } else if (command === 'help') {
                 term.echo('Available commands are:');
@@ -26,16 +29,20 @@ jQuery(function($) {
                 term.echo('help\tThis help text');
                 term.echo('yii\tyii command');
                 term.echo('quit\tQuit web shell');
+                scrollDown();
             } else if (command === 'quit') {
                 var exitUrl = '{$quitUrl}';
                 if (exitUrl) {
                     term.echo('Bye!');
+                    scrollDown();
                     location.replace(exitUrl);
                 } else {
                     term.echo('There is no exit.');
+                    scrollDown();
                 }
             } else {
                 term.echo('Unknown command.');
+                scrollDown();
             }
         },
         {
@@ -45,9 +52,13 @@ jQuery(function($) {
         }
     );
 
-    $('html').on('keydown', function(){
-        $('#webshell').click();
+    $('html').on('keydown', function(e) {
+        webshell.click();
     });
+
+    function scrollDown() {
+        $('html, body').animate({ scrollTop: webshell.height() }, 'fast');
+    }
 });
 JS
 );
