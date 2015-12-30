@@ -54,6 +54,11 @@ class Module extends \yii\base\Module
     public $allowedIPs = ['127.0.0.1', '::1'];
 
     /**
+     * @var callable a PHP callable whose return value determines when allowed to access this module.
+     */
+	public $allowedCallback;
+	
+    /**
      * @inheritdoc
      */
     public function init()
@@ -83,6 +88,9 @@ class Module extends \yii\base\Module
      */
     protected function checkAccess()
     {
+    	if($this->allowedCallback !== null && call_user_func($this->allowedCallback)) {
+			return true;
+		}
         $ip = Yii::$app->getRequest()->getUserIP();
         foreach ($this->allowedIPs as $filter) {
             if ($filter === '*' || $filter === $ip || (($pos = strpos($filter, '*')) !== false && !strncmp($ip, $filter, $pos))) {
