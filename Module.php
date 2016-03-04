@@ -2,6 +2,7 @@
 namespace samdark\webshell;
 
 use Yii;
+use yii\base\Action;
 use yii\web\ForbiddenHttpException;
 
 /**
@@ -54,6 +55,17 @@ class Module extends \yii\base\Module
     public $allowedIPs = ['127.0.0.1', '::1'];
 
     /**
+     * @var callable A valid PHP callback that returns true if user is allowed to use web shell and false otherwise
+     *
+     * The signature is the following:
+     *
+     * function (Action $action)
+     *
+     * @since 2.0.0
+     */
+    public $checkAccessCallback;
+
+    /**
      * @inheritdoc
      */
     public function init()
@@ -71,7 +83,7 @@ class Module extends \yii\base\Module
             return false;
         }
 
-        if (Yii::$app instanceof \yii\web\Application && !$this->checkAccess()) {
+        if (Yii::$app instanceof \yii\web\Application && !$this->checkAccess($action)) {
             throw new ForbiddenHttpException('You are not allowed to access this page.');
         }
 
@@ -81,16 +93,28 @@ class Module extends \yii\base\Module
     /**
      * @return boolean whether the module can be accessed by the current user
      */
-    protected function checkAccess()
+    protected function checkAccess(Action $action)
     {
+        $allowed = false;
+
         $ip = Yii::$app->getRequest()->getUserIP();
         foreach ($this->allowedIPs as $filter) {
             if ($filter === '*' || $filter === $ip || (($pos = strpos($filter, '*')) !== false && !strncmp($ip, $filter, $pos))) {
-                return true;
+                $allowed = true;
+                break;
             }
         }
-        Yii::warning('Access to web shell is denied due to IP address restriction. The requested IP is ' . $ip, __METHOD__);
 
-        return false;
+        if ($allowed === false) {
+            Yii::warning('Access to web shell is denied due to IP address restriction. The requested IP is ' . $ip, __METHOD__);
+            return false;
+        }
+
+        if ($this->checkAccessCallback !== null && call_user_func_array($this->checkAccessCallback, [$action]) !== true) {
+            Yii::warning('Access to web shell is denied due to checkAccessCallback.', __METHOD__);
+            return false;
+        }
+
+        return true;
     }
 }
