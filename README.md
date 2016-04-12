@@ -65,3 +65,8 @@ return [
     ],
 ]
 ```
+
+Limitations
+-----------
+
+Web shell is unable to work interactively because of request-response nature of web. Therefore you should disable interactive mode for commands.
