@@ -38,6 +38,8 @@ return [
             // 'yiiScript' => Yii::getAlias('@root'). '/yii', // adjust path to point to your ./yii script
         ],
     ],
+
+    // ... other application configuration
 ]
 ```
 
@@ -63,6 +65,8 @@ return [
             }
         ],
     ],
+
+    // ... other application configuration
 ]
 ```
 
