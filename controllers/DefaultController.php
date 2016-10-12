@@ -50,9 +50,61 @@ class DefaultController extends Controller
 
         switch ($options['method']) {
             case 'yii':
-                list ($status, $output) = $this->runConsole(implode(' ', $options['params']));
-                return ['result' => $output];
+                $exitCode = 1;
+                $output = null;
+                $params = explode(' ', $options['params']);
+    
+                if (!empty($params) and in_array($params[0], ['-wp', '--runInWebProcess'])) {
+                    array_shift($params); //remove runInWebProcess option parameter
+
+                    if (empty($params)) 
+                        $params[] = 'help'; //just typing 'yii' in console defaults to 'yii help'
+
+                    list($exitCode, $output) = $this->runYiiConsoleCommandsInWebProcess($params);
+                }
+                else
+                    list ($exitCode, $output) = $this->runConsole(implode(' ', $params));
+
+                return [
+                    'exitCode' => $exitCode,
+                    'output' => $output
+                ];
         }
+    }
+
+    // popen might be disabled for security reasons in the php.ini.
+    // this is common on shared hosting.
+    // read http://www.cyberciti.biz/faq/linux-unix-apache-lighttpd-phpini-disable-functions/
+    // refer to http://php.net/manual/en/ini.core.php#ini.disable-functions
+    private function runYiiConsoleCommandsInWebProcess(array $requestParams)
+    {
+        //remember current web app
+        // inspired by https://github.com/tebazil/yii2-console-runner/blob/master/src/ConsoleCommandRunner.php
+        $webApp = Yii::$app;
+
+        try {
+            $request = new \yii\console\Request;
+            $request->setParams($requestParams);
+            list ($route, $params) = $request->resolve();
+
+            define('STDOUT', fopen('php://memory', 'w+'));
+            define('STDERR', STDOUT);
+            $stdout = STDOUT;
+            ob_start();
+            Yii::$app = new \yii\console\Application(require(Yii::getAlias('@app/config/console.php')));
+            $exitCode = Yii::$app->runAction($route, $params);
+            rewind(STDOUT);
+            $output = stream_get_contents(STDOUT);
+            $output .= ob_get_clean();
+            fclose(STDOUT);
+        }
+        catch (\Exception $ex) {
+            $output = $webApp->errorHandler->convertExceptionToString($ex);
+            $exitCode = 1;
+        }
+
+        Yii::$app = $webApp;
+        return [$exitCode, $output];
     }
 
     /**
