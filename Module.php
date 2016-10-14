@@ -46,6 +46,13 @@ class Module extends \yii\base\Module
     public $yiiScript = '@app/yii';
 
     /**
+     * @var string path to the yii console app configuration file
+     * used to run the yii command in the same process as the web application's
+     * if so chosen.
+     */
+    public $consoleConfig = '@app/config/console.php';
+    
+    /**
      * @var array the list of IPs that are allowed to access this module.
      * Each array element represents a single IP filter which can be either an IP address
      * or an address with wildcard (e.g. 192.168.0.*) to represent a network segment.

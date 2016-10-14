@@ -55,10 +55,12 @@ class DefaultController extends Controller
                 $params = explode(' ', $options['params']);
     
                 if (!empty($params) and in_array($params[0], ['-wp', '--runInWebProcess'])) {
-                    array_shift($params); //remove runInWebProcess option parameter
+                    array_shift($params); // remove runInWebProcess option parameter
 
+                    // mimicking yii command behaviour
+                    // just typing 'yii' in console defaults to 'yii help'
                     if (empty($params)) 
-                        $params[] = 'help'; //just typing 'yii' in console defaults to 'yii help'
+                        $params[] = 'help';
 
                     list($exitCode, $output) = $this->runYiiConsoleCommandsInWebProcess($params);
                 }
@@ -78,24 +80,30 @@ class DefaultController extends Controller
     // refer to http://php.net/manual/en/ini.core.php#ini.disable-functions
     private function runYiiConsoleCommandsInWebProcess(array $requestParams)
     {
-        //remember current web app
+        // remember current web app
         // inspired by https://github.com/tebazil/yii2-console-runner/blob/master/src/ConsoleCommandRunner.php
         $webApp = Yii::$app;
 
         try {
+            //use console request to resolve command and arguments
             $request = new \yii\console\Request;
             $request->setParams($requestParams);
             list ($route, $params) = $request->resolve();
 
+            /*  redefine STDOUT and STDERR streams
+                to write to the memory stream which is readable.
+                this might cause a PHP Notice because of global constant
+                redefinition if they're previously defined or this method
+                is called mor than once per HTTP request. */
             define('STDOUT', fopen('php://memory', 'w+'));
             define('STDERR', STDOUT);
-            $stdout = STDOUT;
-            ob_start();
-            Yii::$app = new \yii\console\Application(require(Yii::getAlias('@app/config/console.php')));
+            ob_start(); // aditionally buffer output, echo() and printf() write to this
+            // set app context
+            Yii::$app = new \yii\console\Application(require(Yii::getAlias($this->module->consoleConfig)));
             $exitCode = Yii::$app->runAction($route, $params);
             rewind(STDOUT);
-            $output = stream_get_contents(STDOUT);
-            $output .= ob_get_clean();
+            $output = stream_get_contents(STDOUT); // whatever has been written to STDOUT and STDERR
+            $output .= ob_get_clean(); // and what has been echoed and printed
             fclose(STDOUT);
         }
         catch (\Exception $ex) {
@@ -103,7 +111,7 @@ class DefaultController extends Controller
             $exitCode = 1;
         }
 
-        Yii::$app = $webApp;
+        Yii::$app = $webApp; // revert to web app context
         return [$exitCode, $output];
     }
 
