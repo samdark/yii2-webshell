@@ -45,6 +45,15 @@ class Module extends \yii\base\Module
      */
     public $yiiScript = '@app/yii';
 
+    /** @var bool Enable composer support */
+    public $composerEnabled = false;
+
+    /** @var string composer-command: composer or php composer.phar */
+    public $composerCommand = 'composer';
+
+    /** @var string path to main folder */
+    public $composerWorkingDirectory = '@app';
+
     /**
      * @var array the list of IPs that are allowed to access this module.
      * Each array element represents a single IP filter which can be either an IP address
