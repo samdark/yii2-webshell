@@ -35,7 +35,7 @@ class DefaultController extends Controller
         return $this->render('index', [
             'quitUrl' => $this->module->quitUrl ? Url::toRoute($this->module->quitUrl) : null,
             'greetings' => $this->module->greetings,
-	        'module' => $this->module,
+            'module' => $this->module,
         ]);
     }
 
@@ -52,21 +52,21 @@ class DefaultController extends Controller
         switch ($options['method']) {
             case 'yii':
 	            $cmd = Yii::getAlias($this->module->yiiScript) . ' '
-		            . implode(' ', $options['params'])
-		            . ' 2>&1';
+		        . implode(' ', $options['params'])
+		        . ' 2>&1';
                 list ($status, $output) = $this->runConsole($cmd);
                 return ['result' => $output];
 	        case 'composer':
-	        	if(!$this->module->composerEnabled){
-	        		return ['result' => 'no composer support'];
-		        }
+                if (!$this->module->composerEnabled) {
+                    return ['result' => 'no composer support'];
+                }
 
-	        	$cmd = $this->module->composerCommand . ' '
-			        . implode(' ', $options['params'])
+                $cmd = $this->module->composerCommand . ' '
+		    	    . implode(' ', $options['params'])
 			        . ' -d='.Yii::getAlias($this->module->composerWorkingDirectory)
-			        . ' 2>&1';
-		        list ($status, $output) = $this->runConsole($cmd);
-		        return ['result' => $output];
+                    . ' 2>&1';
+		            list ($status, $output) = $this->runConsole($cmd);
+		            return ['result' => $output];
         }
     }
 
