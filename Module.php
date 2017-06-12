@@ -4,6 +4,7 @@ namespace samdark\webshell;
 use Yii;
 use yii\base\Action;
 use yii\web\ForbiddenHttpException;
+use yii\web\Response;
 
 /**
  * This is the main module class for the web shell module.
@@ -72,6 +73,7 @@ class Module extends \yii\base\Module
     {
         parent::init();
         set_time_limit(0);
+        Yii::$app->getResponse()->format = Response::FORMAT_HTML;
     }
 
     /**
