@@ -34,7 +34,8 @@ class DefaultController extends Controller
         $this->layout = 'shell';
         return $this->render('index', [
             'quitUrl' => $this->module->quitUrl ? Url::toRoute($this->module->quitUrl) : null,
-            'greetings' => $this->module->greetings
+            'greetings' => $this->module->greetings,
+            'module' => $this->module,
         ]);
     }
 
@@ -50,8 +51,22 @@ class DefaultController extends Controller
 
         switch ($options['method']) {
             case 'yii':
-                list ($status, $output) = $this->runConsole(implode(' ', $options['params']));
+	            $cmd = Yii::getAlias($this->module->yiiScript) . ' '
+		        . implode(' ', $options['params'])
+		        . ' 2>&1';
+                list ($status, $output) = $this->runConsole($cmd);
                 return ['result' => $output];
+	        case 'composer':
+                if (!$this->module->composerEnabled) {
+                    return ['result' => 'no composer support'];
+                }
+
+                $cmd = $this->module->composerCommand . ' '
+		    	    . implode(' ', $options['params'])
+			        . ' -d='.Yii::getAlias($this->module->composerWorkingDirectory)
+                    . ' 2>&1';
+		            list ($status, $output) = $this->runConsole($cmd);
+		            return ['result' => $output];
         }
     }
 
@@ -64,9 +79,7 @@ class DefaultController extends Controller
      */
     private function runConsole($command)
     {
-        $cmd = Yii::getAlias($this->module->yiiScript) . ' ' . $command . ' 2>&1';
-
-        $handler = popen($cmd, 'r');
+        $handler = popen($command, 'r');
         $output = '';
         while (!feof($handler)) {
             $output .= fgets($handler);

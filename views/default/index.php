@@ -2,6 +2,7 @@
 /** @var $this yii\web\View */
 /** @var $quitUrl string */
 /** @var $greetings string */
+/** @var $module \samdark\webshell\Module*/
 use yii\helpers\Url;
 
 \samdark\webshell\WebshellAsset::register($this);
@@ -9,6 +10,25 @@ use yii\helpers\Url;
 $endpoint = Url::toRoute(['default/rpc']);
 
 $this->title = $greetings;
+
+$jsComposerHelp = '';
+$jsComposerExecution = '';
+
+if($module->composerEnabled){
+    $jsComposerHelp = <<<js
+    term.echo('composer\tcomposer command');
+js;
+    $jsComposerExecution = <<<js
+    else if (command.indexOf('composer') === 0 || command.indexOf('composer') === 8){
+        $.jrpc('{$endpoint}', 'composer', [command.replace(/^composer ?/, '')], function(json) {
+            term.echo(json.result);
+            scrollDown();
+        });    
+    }
+js;
+
+
+}
 
 $this->registerJs(
 <<<JS
@@ -22,10 +42,12 @@ jQuery(function($) {
                         term.echo(json.result);
                         scrollDown();
                     });
-            } else if (command === 'help') {
+            } $jsComposerExecution
+            else if (command === 'help') {
                 term.echo('Available commands are:');
                 term.echo('');
                 term.echo("clear\tClear console");
+                $jsComposerHelp
                 term.echo('help\tThis help text');
                 term.echo('yii\tyii command');
                 term.echo('quit\tQuit web shell');
